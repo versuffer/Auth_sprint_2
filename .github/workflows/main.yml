@@ -1,0 +1,32 @@
+name: Main CI/CD
+
+on:
+  push:
+    branches:
+      - '*'
+  pull_request:
+    branches:
+      - '*'
+
+jobs:
+  tests:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: 3.11
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install "poetry==1.8.2"
+          poetry config virtualenvs.create false
+          poetry install --no-root --no-interaction
+
+      - name: Test isort
+        run: python -m isort . --check-only
+
+      - name: Test with flake8
+        run: python -m flake8
