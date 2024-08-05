@@ -28,17 +28,16 @@ redis_conn = redis.Redis(host='localhost', port=6379, decode_responses=True)
 @app.middleware("http")
 async def rate_limit_middleware(request: Request, call_next):
     """Ограничение запросов от одного пользователя."""
-    token = request.headers.get("Authorization")
-    client_ip = request.client.host
+    client_ip = request.headers.get("X-Forwarded-For")
 
-    identifier = token if token else client_ip
-
-    if not identifier:
-        return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"detail": "Missing Access Identifier"})
+    if not client_ip:
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={"detail": "Missing Access Identifier"}
+        )
 
     pipe = redis_conn.pipeline()
     now = datetime.datetime.now()
-    key = f'{identifier}:{now.minute}'
+    key = f'{client_ip}:{now.minute}'
 
     pipe.incr(key, 1)
     pipe.expire(key, 59)
