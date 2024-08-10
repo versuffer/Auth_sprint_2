@@ -11,6 +11,6 @@ COPY . .
 
 EXPOSE 8002
 
-ENTRYPOINT ["uwsgi", "--strict", "--ini", "uwsgi.ini"]
+ENTRYPOINT ["sh", "-c", "python manage.py migrate && uwsgi --strict --ini uwsgi.ini"]
 
 LABEL author="Dmitrii Ansjaw"
