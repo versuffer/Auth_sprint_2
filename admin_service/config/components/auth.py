@@ -7,7 +7,8 @@ AUTHENTICATION_BACKENDS = [
     # 'django.contrib.auth.backends.ModelBackend',
 ]
 
-AUTH_API_LOGIN_URL = os.getenv('AUTH_API_LOGIN_URL')
+AUTH_API_BASE_URL = os.getenv('AUTH_API_BASE_URL')
+AUTH_API_PORT = os.getenv('AUTH_API_PORT')
 
 AUTH_PASSWORD_VALIDATORS = [
     {
