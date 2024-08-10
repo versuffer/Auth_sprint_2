@@ -18,7 +18,8 @@ class Roles(StrEnum):
 class CustomBackend(BaseBackend):
     def authenticate(self, request, username=None, password=None):
         url = settings.AUTH_API_LOGIN_URL
-        headers = {'user-agent': 'macbook'}
+        http_user_agent = request.META.get('HTTP_USER_AGENT')
+        headers = {'user-agent': http_user_agent}
         payload = {'login': username, 'password': password}
         response = requests.post(url, data=json.dumps(payload), headers=headers)
         if response.status_code != http.HTTPStatus.OK:
@@ -33,8 +34,3 @@ class CustomBackend(BaseBackend):
 
         return user
 
-    def get_user(self, user_id):
-        try:
-            return User.objects.get(pk=user_id)
-        except User.DoesNotExist:
-            return None
