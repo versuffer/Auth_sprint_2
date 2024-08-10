@@ -21,9 +21,8 @@ jobs:
       - name: Install dependencies
         run: |
           pip install --upgrade pip
-          pip install "poetry==1.8.2"
-          poetry config virtualenvs.create false
-          poetry install --no-root --no-interaction
+          pip install "isort"
+          pip install "flake8"
 
       - name: Test isort
         run: python -m isort . --check-only
