@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     APP_DESCRIPTION: str = 'Default description'
     DEBUG: bool = False
     LOG_LEVEL: str = 'INFO'
+    REQUEST_LIMIT_PER_MINUTE: int
 
     # Auth
     JWT_SECRET_KEY: SecretStr
