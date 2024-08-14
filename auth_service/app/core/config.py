@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     APP_DESCRIPTION: str = 'Default description'
     DEBUG: bool = False
     LOG_LEVEL: str = 'INFO'
+    REQUEST_LIMIT_PER_MINUTE: int
 
     # Auth
     JWT_SECRET_KEY: SecretStr
@@ -34,6 +35,13 @@ class Settings(BaseSettings):
     REDIS_PORT: int
     REDIS_DB: str
     REDIS_DSN: RedisDsn | str = ''
+
+    # Jaeger
+    JAEGER_ENABLE: bool = True
+    JAEGER_HOST: str
+    JAEGER_PORT: int
+
+    AUTH_APP_HOST: str
 
     model_config = SettingsConfigDict(env_file=BASEDIR / '.env')
 

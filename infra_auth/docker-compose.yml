@@ -65,6 +65,15 @@ services:
       postgres_db:
         condition: service_healthy
 
+  auth_jaeger:
+    image: jaegertracing/all-in-one:latest
+    networks:
+      - custom_network
+    ports:
+      - '16686:16686'
+    depends_on:
+      - auth_app
+
   nginx:
     container_name: nginx
     image: nginx:latest
