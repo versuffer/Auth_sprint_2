@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Header, Query, status
+from fastapi import APIRouter, Depends, Header, Query, Request,status
 
 from app.api.docs.tags import ApiTags
 from app.exceptions import (
@@ -54,13 +54,13 @@ async def api_v1_register(
     tags=[ApiTags.V1_AUTH],
 )
 async def api_v1_login(
+    request: Request,
     user_credentials: UserCredentialsSchema,
-    user_agent: str = Header(),
     service: AuthenticationService = Depends(),
 ):
     login_data = CredentialsLoginDataSchema(
         **user_credentials.model_dump(),
-        user_agent=user_agent,
+        user_agent=request.headers.get('user-agent', 'user agent not defined'),
         login_type=LoginType.CREDENTIALS,
     )
     try:
@@ -77,12 +77,14 @@ async def api_v1_login(
     tags=[ApiTags.V1_AUTH],
 )
 async def api_v1_refresh(
+    request: Request,
     refresh_token: str = Depends(get_bearer_token),
-    user_agent: str = Header(),
     service: AuthenticationService = Depends(),
 ):
     login_data = RefreshLoginDataSchema(
-        refresh_token=refresh_token, user_agent=user_agent, login_type=LoginType.REFRESH
+        refresh_token=refresh_token,
+        user_agent=request.headers.get('user-agent', 'user agent not defined'),
+        login_type=LoginType.REFRESH
     )
     try:
         return await service.authenticate_by_refresh_token(login_data=login_data)
