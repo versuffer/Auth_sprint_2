@@ -11,6 +11,10 @@ from starlette.responses import JSONResponse
 from app.api.api_router import api_router
 from app.core.config import app_settings
 from app.core.logs import logger
+from app.utils.jaeger import configure_tracer
+
+if app_settings.JAEGER_ENABLE:
+    configure_tracer(app_settings.JAEGER_HOST, app_settings.JAEGER_PORT)
 
 app = FastAPI(
     title=app_settings.APP_TITLE,
@@ -28,7 +32,9 @@ redis_conn = redis.Redis(host='localhost', port=6379, decode_responses=True)
 @app.middleware("http")
 async def rate_limit_middleware(request: Request, call_next):
     """Ограничение запросов от одного пользователя."""
+
     client_ip = request.headers.get("X-Forwarded-For")
+    request_id = request.headers.get('X-Request-Id')
 
     if not client_ip:
         return JSONResponse(
@@ -48,6 +54,12 @@ async def rate_limit_middleware(request: Request, call_next):
         return JSONResponse(status_code=status.HTTP_429_TOO_MANY_REQUESTS, content={"detail": "Too Many Requests"})
 
     response = await call_next(request)
+
+    if not request_id:
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST, content={'detail': 'X-Request-Id is required'}
+        )
+
     return response
 
 

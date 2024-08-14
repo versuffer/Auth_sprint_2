@@ -36,6 +36,13 @@ class Settings(BaseSettings):
     REDIS_DB: str
     REDIS_DSN: RedisDsn | str = ''
 
+    # Jaeger
+    JAEGER_ENABLE: bool = True
+    JAEGER_HOST: str
+    JAEGER_PORT: int
+
+    AUTH_APP_HOST: str
+
     model_config = SettingsConfigDict(env_file=BASEDIR / '.env')
 
     @field_validator('POSTGRES_DSN')

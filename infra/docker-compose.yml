@@ -43,6 +43,13 @@ services:
     depends_on:
       - redis
 
+  auth_jaeger:
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - '16686:16686'
+    depends_on:
+      - auth_app
+
   nginx:
     container_name: nginx
     image: nginx:latest
