@@ -1,16 +1,14 @@
 from opentelemetry import trace
+from opentelemetry.exporter.jaeger.thrift import JaegerExporter
 from opentelemetry.sdk.resources import Resource
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor, ConsoleSpanExporter
-from opentelemetry.exporter.jaeger.thrift import JaegerExporter
 
 from app.core.config import app_settings
 
 
 def configure_tracer(host, port) -> None:
-    resource = Resource(attributes={
-        "service.name": app_settings.AUTH_APP_HOST
-    })
+    resource = Resource(attributes={"service.name": app_settings.AUTH_APP_HOST})
 
     tracer_provider = TracerProvider(resource=resource)
     trace.set_tracer_provider(tracer_provider)

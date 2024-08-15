@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Header, Query, status, Request
+from fastapi import APIRouter, Depends, Query, Request, status
 
 from app.api.docs.tags import ApiTags
 from app.exceptions import (
@@ -6,6 +6,7 @@ from app.exceptions import (
     UserAlreadyExistsError,
     UserNotFoundError,
     WrongPasswordError,
+    YandexAuthError,
     auth_error,
     user_already_exists_error,
 )
@@ -24,6 +25,7 @@ from app.schemas.api.v1.auth_schemas import (
 )
 from app.services.auth.auth_service import AuthenticationService
 from app.services.auth.registration_service import RegistrationService
+from app.services.auth.yandex_provider import YandexProvider
 from app.services.fastapi.dependencies import get_bearer_token
 
 auth_router = APIRouter(prefix='/auth')
@@ -82,7 +84,9 @@ async def api_v1_refresh(
     service: AuthenticationService = Depends(),
 ):
     login_data = RefreshLoginDataSchema(
-        refresh_token=refresh_token, user_agent=request.headers.get('user-agent', 'user agent not defined'), login_type=LoginType.REFRESH
+        refresh_token=refresh_token,
+        user_agent=request.headers.get('user-agent', 'user agent not defined'),
+        login_type=LoginType.REFRESH,
     )
     try:
         return await service.authenticate_by_refresh_token(login_data=login_data)
@@ -178,4 +182,35 @@ async def api_v1_get_history(
     try:
         return await service.get_history(access_token, limit, offset)
     except (TokenError, UserNotFoundError):
+        raise auth_error
+
+
+@auth_router.post(
+    '/yandex_auth',
+    status_code=status.HTTP_200_OK,
+    summary='Войти с помощью Yandex',
+    response_model=str,
+    tags=["Авторизация"],
+)
+async def yandex_auth(yandex_provider: YandexProvider = Depends()) -> str:
+    return yandex_provider.get_auth_url()
+
+
+@auth_router.get(
+    '/login/yandex/redirect',
+    response_model=TokenPairSchema,
+    status_code=status.HTTP_200_OK,
+    summary="Войти с помощью яндекса редирект",
+    tags=["Авторизация"],
+)
+async def yandex_login_redirect(
+    code: int,
+    request: Request,
+    service: AuthenticationService = Depends(),
+):
+    user_agent = request.headers.get("User-Agent")
+
+    try:
+        return await service.login_by_yandex(code=code, user_agent=user_agent)
+    except YandexAuthError:
         raise auth_error

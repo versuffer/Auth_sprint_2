@@ -56,9 +56,7 @@ async def rate_limit_middleware(request: Request, call_next):
     response = await call_next(request)
 
     if not request_id:
-        return JSONResponse(
-            status_code=status.HTTP_400_BAD_REQUEST, content={'detail': 'X-Request-Id is required'}
-        )
+        return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={'detail': 'X-Request-Id is required'})
 
     return response
 

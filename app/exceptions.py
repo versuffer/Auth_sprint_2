@@ -72,6 +72,10 @@ class AuthorizationError(BaseError):
     pass
 
 
+class YandexAuthError(BaseError):
+    pass
+
+
 auth_error = HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Unauthorized')
 not_found_error = HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Not Found')
 user_not_found_error = HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='User not found')
