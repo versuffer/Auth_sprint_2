@@ -7,11 +7,13 @@ from app.exceptions import (
     UserAlreadyExistsError,
     UserNotFoundError,
     WrongPasswordError,
+    YandexAuthError,
 )
 from app.schemas.api.v1.auth_schemas import (
     CredentialsLoginDataSchema,
     HistorySchema,
     HistorySchemaCreate,
+    LoginType,
     RefreshLoginDataSchema,
     ResetPasswordSchema,
     ResetUsernameSchema,
@@ -23,7 +25,9 @@ from app.schemas.services.auth.user_service_schemas import UserSchema
 from app.schemas.services.repositories.user_repository_schemas import UserDBSchema
 from app.services.auth.session_service import session_service
 from app.services.auth.user_service import user_service
+from app.services.auth.yandex_provider import YandexProvider
 from app.services.utils.password_service import password_service
+from app.utils.yandex_id.yandex_id_schema import User as YandexUser
 
 
 class AuthenticationService:
@@ -119,3 +123,24 @@ class AuthenticationService:
 
         if not user.is_superuser:
             raise AuthorizationError
+
+    async def login_by_yandex(self, code: int, user_agent: str) -> TokenPairSchema:
+        yandex_provider = YandexProvider()
+
+        ya_user: YandexUser = await yandex_provider.get_yadata(code)
+
+        if not ya_user:
+            raise YandexAuthError
+
+        user: UserDBSchema = await self.user_service.get_or_create_user_by_yandex(ya_user=ya_user)
+
+        try:
+            session_data = await self._create_session(user=user)
+            login_data = CredentialsLoginDataSchema(
+                login=user.email, password=user.hashed_password, user_agent=user_agent, login_type=LoginType.CREDENTIALS
+            )
+
+            await self._save_user_login_history(user=user, login_data=login_data, session_id=session_data.session_id)
+            return TokenPairSchema(**session_data.model_dump())
+        except (UserNotFoundError, WrongPasswordError) as err:
+            raise err

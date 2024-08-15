@@ -1,4 +1,5 @@
 from typing import Sequence, Union
+
 from alembic import op
 from sqlalchemy.sql import text
 
@@ -52,13 +53,13 @@ def upgrade() -> None:
         ("2025-04-01", "2025-05-01"),
         ("2025-05-01", "2025-06-01"),
         ("2025-06-01", "2025-07-01"),
-        ("2025-07-01", "2025-08-01")
+        ("2025-07-01", "2025-08-01"),
     ]
 
     for start_date, end_date in partitions:
         op.execute(
             text(
-                f"""CREATE TABLE IF NOT EXISTS "history_{start_date[:4]}_{start_date[5:7]}" PARTITION OF "history_new" 
+                f"""CREATE TABLE IF NOT EXISTS "history_{start_date[:4]}_{start_date[5:7]}" PARTITION OF "history_new"
                 FOR VALUES FROM ('{start_date}') TO ('{end_date}')"""
             )
         )
@@ -80,6 +81,7 @@ def upgrade() -> None:
 
     # Удаляем старую таблицу
     op.execute("DROP TABLE IF EXISTS history_old;")
+
 
 def downgrade() -> None:
     # Создаем временную таблицу для отката
@@ -138,7 +140,7 @@ def downgrade() -> None:
         "history_2025_04",
         "history_2025_05",
         "history_2025_06",
-        "history_2025_07"
+        "history_2025_07",
     ]
 
     for partition in partitions:

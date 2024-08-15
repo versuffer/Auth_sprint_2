@@ -13,8 +13,8 @@ from app.core.config import app_settings
 from app.core.logs import logger
 from app.utils.jaeger import configure_tracer
 
-# if app_settings.JAEGER_ENABLE:
-#     configure_tracer(app_settings.JAEGER_HOST, app_settings.JAEGER_PORT)
+if app_settings.JAEGER_ENABLE:
+    configure_tracer(app_settings.JAEGER_HOST, app_settings.JAEGER_PORT)
 
 app = FastAPI(
     title=app_settings.APP_TITLE,
@@ -34,8 +34,8 @@ redis_conn = redis.Redis(host=app_settings.REDIS_HOST, port=app_settings.REDIS_P
 async def rate_limit_middleware(request: Request, call_next):
     """Ограничение запросов от одного пользователя."""
 
-    client_ip = request.headers.get("X-Forwarded-For")
-    request_id = request.headers.get('X-Request-Id')
+    client_ip = request.headers.get("X-Forwarded-For") if not app_settings.DEBUG else 'client ip not defined'
+    request_id = request.headers.get('X-Request-Id') if not app_settings.DEBUG else 'request id not defined'
 
     if not client_ip:
         return JSONResponse(
@@ -57,9 +57,7 @@ async def rate_limit_middleware(request: Request, call_next):
     response = await call_next(request)
 
     if not request_id:
-        return JSONResponse(
-            status_code=status.HTTP_400_BAD_REQUEST, content={'detail': 'X-Request-Id is required'}
-        )
+        return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={'detail': 'X-Request-Id is required'})
 
     return response
 

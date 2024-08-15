@@ -2,7 +2,7 @@ from datetime import datetime
 from uuid import UUID
 
 from sqlalchemy import ForeignKey, UniqueConstraint
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, backref, mapped_column, relationship
 from sqlalchemy.sql import expression
 
 from app.db.postgres.models.base import Base, text
@@ -65,3 +65,18 @@ class UserRoleAssociationModel(Base):
     role_id: Mapped[UUID] = mapped_column(ForeignKey('roles.id', ondelete='CASCADE'), nullable=False)
 
     __table_args__ = (UniqueConstraint('user_id', 'role_id', name='user_role_association_unique'),)
+
+
+class SocialAccount(Base):
+    __tablename__ = 'social_account'
+
+    user_id: Mapped[UUID] = mapped_column(ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
+    user: Mapped[UserModel] = relationship(UserModel, backref=backref('social_accounts', lazy=True))
+
+    social_id: Mapped[str] = mapped_column(nullable=False)
+    social_name: Mapped[str] = mapped_column(nullable=False)
+
+    __table_args__ = (UniqueConstraint('social_id', 'social_name', name='social_pk'),)
+
+    def __repr__(self):
+        return f'<SocialAccount {self.social_name}:{self.user_id}>'

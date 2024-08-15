@@ -43,6 +43,11 @@ class Settings(BaseSettings):
 
     AUTH_APP_HOST: str
 
+    YANDEX_CLIENT_ID: str
+    YANDEX_CLIENT_SECRET: str
+    YANDEX_REDIRECT_URI: str
+    YANDEX_BASE_URL: str
+
     model_config = SettingsConfigDict(env_file=BASEDIR / '.env')
 
     @field_validator('POSTGRES_DSN')
