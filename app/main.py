@@ -33,8 +33,8 @@ redis_conn = redis.Redis(host='localhost', port=6379, decode_responses=True)
 async def rate_limit_middleware(request: Request, call_next):
     """Ограничение запросов от одного пользователя."""
 
-    client_ip = request.headers.get("X-Forwarded-For", 'client ip not defined')
-    request_id = request.headers.get('X-Request-Id', 'request id not defined')
+    client_ip = request.headers.get("X-Forwarded-For") if not app_settings.DEBUG else 'client ip not defined'
+    request_id = request.headers.get('X-Request-Id') if not app_settings.DEBUG else 'request id not defined'
 
     if not client_ip:
         return JSONResponse(
