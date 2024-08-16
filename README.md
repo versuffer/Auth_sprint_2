@@ -13,6 +13,10 @@ docker network create custom_network
 sudo docker compose up -d
 ```
 
+# Ссылка на сервис фильмов где реализована интеграция с сервисом авторизации
+
+https://github.com/versuffer/Async_API_sprint_2/blob/main/app/main.py
+
 # !Пояснение!
 
 Из-за конфликта зависимостей библиотека yandexid частично переписана и лежит в проекте.
