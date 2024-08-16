@@ -1,6 +1,6 @@
-from auth_service.app.exceptions import ProviderAuthError
-from auth_service.app.services.providers.base_provider import BaseProvider
-from auth_service.app.services.providers.yandex_provider import YandexProvider
+from app.exceptions import ProviderAuthError
+from app.services.providers.base_provider import BaseProvider
+from app.services.providers.yandex_provider import YandexProvider
 
 
 class ProviderService:

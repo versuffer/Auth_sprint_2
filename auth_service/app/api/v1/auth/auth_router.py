@@ -24,11 +24,10 @@ from app.schemas.api.v1.auth_schemas import (
 )
 from app.services.auth.auth_service import AuthenticationService
 from app.services.auth.registration_service import RegistrationService
-from app.services.auth.yandex_provider import YandexProvider
 from app.services.fastapi.dependencies import get_bearer_token
 
-from auth_service.app.exceptions import ProviderAuthError
-from auth_service.app.services.providers.provider_service import ProviderService
+from app.exceptions import ProviderAuthError
+from app.services.providers.provider_service import ProviderService
 
 auth_router = APIRouter(prefix='/auth')
 

@@ -24,12 +24,11 @@ from app.schemas.services.auth.user_service_schemas import UserSchema
 from app.schemas.services.repositories.user_repository_schemas import UserDBSchema
 from app.services.auth.session_service import session_service
 from app.services.auth.user_service import user_service
-from app.services.auth.yandex_provider import YandexProvider
 from app.services.utils.password_service import password_service
 from app.utils.yandex_id.yandex_id_schema import User as SocialUser
 
-from auth_service.app.exceptions import ProviderAuthError
-from auth_service.app.services.providers.base_provider import BaseProvider
+from app.exceptions import ProviderAuthError
+from app.services.providers.base_provider import BaseProvider
 
 
 class AuthenticationService:
