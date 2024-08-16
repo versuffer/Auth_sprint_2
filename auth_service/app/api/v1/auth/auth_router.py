@@ -6,7 +6,6 @@ from app.exceptions import (
     UserAlreadyExistsError,
     UserNotFoundError,
     WrongPasswordError,
-    YandexAuthError,
     auth_error,
     user_already_exists_error,
 )
@@ -27,6 +26,9 @@ from app.services.auth.auth_service import AuthenticationService
 from app.services.auth.registration_service import RegistrationService
 from app.services.auth.yandex_provider import YandexProvider
 from app.services.fastapi.dependencies import get_bearer_token
+
+from auth_service.app.exceptions import ProviderAuthError
+from auth_service.app.services.providers.provider_service import ProviderService
 
 auth_router = APIRouter(prefix='/auth')
 
@@ -186,31 +188,34 @@ async def api_v1_get_history(
 
 
 @auth_router.post(
-    '/yandex_auth',
+    '/social_auth/{provider_name}',
     status_code=status.HTTP_200_OK,
-    summary='Войти с помощью Yandex',
+    summary='Войти с помощью соцсетей',
     response_model=str,
     tags=["Авторизация"],
 )
-async def yandex_auth(yandex_provider: YandexProvider = Depends()) -> str:
-    return yandex_provider.get_auth_url()
+async def social_auth(provider_name: str, provider_service: ProviderService = Depends()) -> str:
+    provider = provider_service.get_provider(provider_name)
+    return provider.get_auth_url()
 
 
 @auth_router.get(
-    '/login/yandex/redirect',
+    '/login/social/redirect/{provider_name}',
     response_model=TokenPairSchema,
     status_code=status.HTTP_200_OK,
-    summary="Войти с помощью яндекса редирект",
+    summary="Войти с помощью редиректа от соцсетей",
     tags=["Авторизация"],
 )
-async def yandex_login_redirect(
+async def social_login_redirect(
     code: int,
+    provider_name: str,
     request: Request,
     service: AuthenticationService = Depends(),
+    provider_service: ProviderService = Depends(),
 ):
     user_agent = request.headers.get("User-Agent")
-
     try:
-        return await service.login_by_yandex(code=code, user_agent=user_agent)
-    except YandexAuthError:
+        provider = provider_service.get_provider(provider_name)
+        return await service.login_by_provider(code=code, provider=provider, user_agent=user_agent)
+    except ProviderAuthError:
         raise auth_error

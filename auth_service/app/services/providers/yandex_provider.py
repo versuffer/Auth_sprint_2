@@ -1,10 +1,12 @@
 from yandex_oauth import yao
 
+from .base_provider import BaseProvider
 from ...core.config import app_settings
 from ...utils.yandex_id.yandex_id import YandexID
 
 
-class YandexProvider:
+class YandexProvider(BaseProvider):
+    NAME: str = 'yandex'
 
     @staticmethod
     def get_auth_url():
@@ -16,7 +18,7 @@ class YandexProvider:
         )
 
     @staticmethod
-    async def get_yadata(code):
+    async def get_userdata(code):
         token = yao.get_token_by_code(code, app_settings.YANDEX_CLIENT_ID, app_settings.YANDEX_CLIENT_SECRET)
         social_user = YandexID(token.get('access_token'))
         user_data = social_user.get_user_info_json()
