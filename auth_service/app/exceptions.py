@@ -72,7 +72,7 @@ class AuthorizationError(BaseError):
     pass
 
 
-class YandexAuthError(BaseError):
+class ProviderAuthError(BaseError):
     pass
 
 

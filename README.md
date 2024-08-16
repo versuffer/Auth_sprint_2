@@ -6,6 +6,10 @@ cd infra_auth
 ```
 
 ```bash
+docker network create custom_network
+```
+
+```bash
 sudo docker compose up -d
 ```
 

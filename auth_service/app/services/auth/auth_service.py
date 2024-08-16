@@ -7,7 +7,6 @@ from app.exceptions import (
     UserAlreadyExistsError,
     UserNotFoundError,
     WrongPasswordError,
-    YandexAuthError,
 )
 from app.schemas.api.v1.auth_schemas import (
     CredentialsLoginDataSchema,
@@ -25,9 +24,11 @@ from app.schemas.services.auth.user_service_schemas import UserSchema
 from app.schemas.services.repositories.user_repository_schemas import UserDBSchema
 from app.services.auth.session_service import session_service
 from app.services.auth.user_service import user_service
-from app.services.auth.yandex_provider import YandexProvider
 from app.services.utils.password_service import password_service
-from app.utils.yandex_id.yandex_id_schema import User as YandexUser
+from app.utils.yandex_id.yandex_id_schema import User as SocialUser
+
+from app.exceptions import ProviderAuthError
+from app.services.providers.base_provider import BaseProvider
 
 
 class AuthenticationService:
@@ -124,15 +125,16 @@ class AuthenticationService:
         if not user.is_superuser:
             raise AuthorizationError
 
-    async def login_by_yandex(self, code: int, user_agent: str) -> TokenPairSchema:
-        yandex_provider = YandexProvider()
+    async def login_by_provider(self, code: int, provider: BaseProvider, user_agent: str) -> TokenPairSchema:
 
-        ya_user: YandexUser = await yandex_provider.get_yadata(code)
+        social_user: SocialUser = await provider.get_userdata(code)
 
-        if not ya_user:
-            raise YandexAuthError
+        if not social_user:
+            raise ProviderAuthError
 
-        user: UserDBSchema = await self.user_service.get_or_create_user_by_yandex(ya_user=ya_user)
+        user: UserDBSchema = await self.user_service.get_or_create_user_by_provider(
+            social_user=social_user, social_name=provider.NAME
+        )
 
         try:
             session_data = await self._create_session(user=user)
