@@ -7,7 +7,7 @@ from django.contrib.auth.backends import BaseBackend
 from django.contrib.auth import get_user_model
 from requests import RequestException
 
-from exceptions import AuthenticationServiceError
+from users.exceptions import AuthenticationServiceError
 
 User = get_user_model()
 
