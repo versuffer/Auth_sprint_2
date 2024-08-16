@@ -1,4 +1,3 @@
-import http
 import json
 from enum import StrEnum, auto
 
@@ -6,6 +5,9 @@ import requests
 from django.conf import settings
 from django.contrib.auth.backends import BaseBackend
 from django.contrib.auth import get_user_model
+from requests import RequestException
+
+from users.exceptions import AuthenticationServiceError
 
 User = get_user_model()
 
@@ -22,22 +24,16 @@ class CustomBackend(BaseBackend):
         headers = {'user-agent': http_user_agent}
         payload = {'login': username, 'password': password}
 
-        print(payload)
-        response = requests.post(url, data=json.dumps(payload), headers=headers)
-        print(response.status_code)
-        if response.status_code != http.HTTPStatus.OK:
-            return None
-
-        data = response.json()
-        print(data)
+        try:
+            response = requests.post(url, data=json.dumps(payload), headers=headers)
+            response.raise_for_status()
+        except RequestException as e:
+            raise AuthenticationServiceError(f"Error during request to {url}: {str(e)}")
 
         try:
             user, created = User.objects.get_or_create(email=username)
-
-            print(user)
-            print(created)
-        except Exception:
-            return None
+        except Exception as e:
+            raise AuthenticationServiceError(f"Error during user creation or retrieval: {str(e)}")
 
         return user
 
