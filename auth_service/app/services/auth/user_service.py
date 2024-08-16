@@ -13,7 +13,7 @@ from app.services.repositories.history_repository import history_repository
 from app.services.repositories.social_repository import social_repository
 from app.services.repositories.user_repository import user_repository
 from app.utils.pass_generator import generate_random_string
-from app.utils.yandex_id.yandex_id_schema import User as YandexUser
+from app.utils.yandex_id.yandex_id_schema import User as SocialUser
 
 
 class UserService:
@@ -57,17 +57,17 @@ class UserService:
         user = await self.user_repository.update(user_id, {'hashed_password': new_password})
         return UserSchema.model_validate(user)
 
-    async def get_or_create_user_by_yandex(self, ya_user: YandexUser) -> UserDBSchema:
+    async def get_or_create_user_by_provider(self, social_user: SocialUser, social_name: str) -> UserDBSchema:
 
         social: SocialDBSchema = await self.social_repository.get_user_by_psuid(
-            psuid=ya_user.psuid,
+            psuid=social_user.psuid,
         )
 
         try:
-            user: UserDBSchema = await self.get_user(login=ya_user.default_email)
+            user: UserDBSchema = await self.get_user(login=social_user.default_email)
         except UserNotFoundError:
             user_data: UserCreateSchema = UserCreateSchema(
-                username=ya_user.login, email=ya_user.default_email, hashed_password=generate_random_string()
+                username=social_user.login, email=social_user.default_email, hashed_password=generate_random_string()
             )
             user = await self.user_repository.create(user_data)
 
@@ -75,7 +75,9 @@ class UserService:
             return user
 
         if not social:
-            social_data: SocialDBSchema = SocialDBSchema(user_id=user.id, social_id=ya_user.psuid, social_name='yandex')
+            social_data: SocialDBSchema = SocialDBSchema(
+                user_id=user.id, social_id=social_user.psuid, social_name=social_name
+            )
             await self.social_repository.create(social_data=social_data)
 
         return user
